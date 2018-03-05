@@ -32,33 +32,30 @@ namespace iroha {
      public:
       /**
        * @param pcs - provide information proposals and commits
-       * @param os - ordering service for sharing transactions
-       * @param validator - perform stateless validation
-       * @param crypto_provider - sign income transactions
+       * @param mst_processor is a handler for multisignature transactions
        */
       TransactionProcessorImpl(
           std::shared_ptr<network::PeerCommunicationService> pcs,
-          std::shared_ptr<validation::StatelessValidator> validator,
           std::shared_ptr<MstProcessor> mst_processor);
 
-      void transactionHandle(ConstRefTransaction transaction) override;
+      void transactionHandle(
+          std::shared_ptr<model::Transaction> transaction) override;
 
-      rxcpp::observable<TxResponse> transactionNotifier() override;
+      rxcpp::observable<std::shared_ptr<model::TransactionResponse>>
+      transactionNotifier() override;
 
      private:
       // connections
       std::shared_ptr<network::PeerCommunicationService> pcs_;
 
       // processing
-      std::shared_ptr<validation::StatelessValidator> validator_;
-
       std::shared_ptr<MstProcessor> mst_processor_;
-
       std::unordered_set<std::string> proposal_set_;
       std::unordered_set<std::string> candidate_set_;
 
       // internal
-      rxcpp::subjects::subject<TxResponse> notifier_;
+      rxcpp::subjects::subject<std::shared_ptr<model::TransactionResponse>>
+          notifier_;
 
       logger::Logger log_;
 
