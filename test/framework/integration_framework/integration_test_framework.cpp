@@ -58,7 +58,6 @@ namespace integration_framework {
         shared_model::proto::BlockBuilder()
             .transactions(
                 std::vector<shared_model::proto::Transaction>{genesis_tx})
-            .txNumber(1)
             .height(1)
             .prevHash(Sha3_256::makeHash(Blob("")))
             .createdTime(iroha::time::now())
