@@ -881,7 +881,6 @@ TEST_F(AmetsuchiTest, TestRestoreWSV) {
       TestBlockBuilder()
           .transactions(
               std::vector<shared_model::proto::Transaction>{genesis_tx})
-          .txNumber(1)
           .height(1)
           .prevHash(shared_model::crypto::Sha3_256::makeHash(
               shared_model::crypto::Blob("")))
