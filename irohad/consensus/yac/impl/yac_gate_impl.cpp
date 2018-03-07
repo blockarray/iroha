@@ -51,13 +51,6 @@ namespace iroha {
         log_ = logger::log("YacGate");
         block_creator_->on_block().subscribe([this](auto block) {
           auto bl = shared_model::proto::from_old(block);
-          std::cout<<std::endl;
-          std::cout<<bl.hash().hex()<<std::endl;
-          std::cout<<block.hash.to_hexstring()<<std::endl;
-
-          std::cout<<std::endl;
-          std::cout<<bl.hash().hex()<<std::endl;
-          std::cout<<block.hash.to_hexstring()<<std::endl;
           auto tmp = bl.prevHash();
           this->vote(bl);
         });
@@ -123,12 +116,7 @@ namespace iroha {
                                 {model_hash.begin(), model_hash.end()}));
                         // if load is successful
                         if (block.has_value()) {
-                          std::unique_ptr<iroha::model::Block> old_block(
-                              block.value()->makeOldModel());
-                          auto tmp =
-                              std::shared_ptr<shared_model::interface::Block>(
-                                  block->operator->());
-                          subscriber.on_next(tmp);
+                          subscriber.on_next(block.value());
                         }
                         subscriber.on_completed();
                       });
