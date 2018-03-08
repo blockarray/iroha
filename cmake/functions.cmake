@@ -21,7 +21,7 @@ endfunction()
 
 # Creates test "test_name"
 function(addtest test_name)
-  if (COVERAGE)
+  if (${CMAKE_BUILD_TYPE} MATCHES "Coverage")
     set(test_xml_output --gtest_output=xml:${REPORT_DIR}/xunit-${test_name}.xml)
   endif ()
   add_executable(${test_name} ${ARGN})
