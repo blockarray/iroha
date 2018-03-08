@@ -31,10 +31,8 @@ include(cmake/ccache.cmake)
 set(REPORT_DIR ${CMAKE_BINARY_DIR}/reports CACHE STRING "Analysis report dir")
 file(MAKE_DIRECTORY ${REPORT_DIR})
 
-if(COVERAGE)
-  include(cmake/analysis/gcovr.cmake)
-endif()
 # 1. make attempt to find analysis tool
 # 2. if successful, enable according target. if not - does nothing.
+include(cmake/analysis/gcovr.cmake)
 include(cmake/analysis/cppcheck.cmake)
 include(cmake/analysis/clang-format.cmake)

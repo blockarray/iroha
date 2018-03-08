@@ -1,9 +1,5 @@
 # https://github.com/bilke/cmake-modules/blob/master/CodeCoverage.cmake
 
-if(NOT CMAKE_BUILD_TYPE STREQUAL "Coverage")
-  message(WARNING "Current build type is ${CMAKE_BUILD_TYPE}, but Coverage is recommended to collect better coverage")
-endif()
-
 # gcovr performs coverage analysis and saves result in build/gcovr.xml
 # expects to receive array of paths to analyzed directories relative to project root
 #
