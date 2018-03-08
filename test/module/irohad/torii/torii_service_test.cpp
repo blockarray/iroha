@@ -103,7 +103,6 @@ class ToriiServiceTest : public testing::Test {
             tx_processor, block_query, proposal_delay))
         .run();
 
-
     runner->waitForServersReady();
   }
 

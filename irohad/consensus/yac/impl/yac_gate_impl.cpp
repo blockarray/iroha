@@ -57,7 +57,7 @@ namespace iroha {
       }
 
       void YacGateImpl::vote(const shared_model::interface::Block &block) {
-        std::cout<<block.signatures().size()<<std::endl;
+        std::cout << block.signatures().size() << std::endl;
         std::unique_ptr<model::Block> bl(block.makeOldModel());
         auto hash = hash_provider_->makeHash(*bl);
         log_->info(
@@ -77,64 +77,65 @@ namespace iroha {
       YacGateImpl::on_commit() {
         return hash_gate_->on_commit().flat_map([this](auto commit_message) {
           // map commit to block if it is present or loaded from other peer
-          return rxcpp::observable<>::create<std::shared_ptr<
-              shared_model::interface::Block>>([this, commit_message](
-                                                   auto subscriber) {
-            const auto hash = getHash(commit_message.votes);
-            if (not hash.has_value()) {
-              log_->info("Invalid commit message, hashes are different");
-              subscriber.on_completed();
-              return;
-            }
-            // if node has voted for the committed block
-            if (hash == current_block_.first) {
-              // append signatures of other nodes
-              this->copySignatures(commit_message);
-              log_->info("consensus: commit top block: height {}, hash {}",
-                         current_block_.second->height(),
-                         current_block_.second->hash().hex());
-              subscriber.on_next(current_block_.second);
-              subscriber.on_completed();
-              return;
-            }
-            // node has voted for another block - load committed block
-            const auto model_hash = hash_provider_->toModelHash(hash.value());
-            // iterate over peers who voted for the committed block
-            rxcpp::observable<>::iterate(commit_message.votes)
-                // allow other peers to apply commit
-                .delay(std::chrono::milliseconds(delay_))
-                .flat_map([this, model_hash](auto vote) {
-                  // map vote to block if it can be loaded
-                  return rxcpp::observable<>::create<
-                      std::shared_ptr<shared_model::interface::Block>>(
-                      [this, model_hash, vote](auto subscriber) {
-                        auto block = block_loader_->retrieveBlock(
-                            shared_model::crypto::PublicKey(
-                                {vote.signature.pubkey.begin(),
-                                 vote.signature.pubkey.end()}),
-                            shared_model::crypto::Hash(
-                                {model_hash.begin(), model_hash.end()}));
-                        // if load is successful
-                        if (block.has_value()) {
-                          subscriber.on_next(block.value());
-                        }
-                        subscriber.on_completed();
-                      });
-                })
-                // need only the first
-                .first()
-                .subscribe(
-                    // if load is successful from at least one node
-                    [subscriber](auto block) {
-                      subscriber.on_next(block);
-                      subscriber.on_completed();
-                    },
-                    // if load has failed, no peers provided the block
-                    [this, subscriber](std::exception_ptr) {
-                      log_->error("Cannot load committed block");
-                      subscriber.on_completed();
-                    });
-          });
+          return rxcpp::observable<>::create<
+              std::shared_ptr<shared_model::interface::Block>>(
+              [this, commit_message](auto subscriber) {
+                const auto hash = getHash(commit_message.votes);
+                if (not hash.has_value()) {
+                  log_->info("Invalid commit message, hashes are different");
+                  subscriber.on_completed();
+                  return;
+                }
+                // if node has voted for the committed block
+                if (hash == current_block_.first) {
+                  // append signatures of other nodes
+                  this->copySignatures(commit_message);
+                  log_->info("consensus: commit top block: height {}, hash {}",
+                             current_block_.second->height(),
+                             current_block_.second->hash().hex());
+                  subscriber.on_next(current_block_.second);
+                  subscriber.on_completed();
+                  return;
+                }
+                // node has voted for another block - load committed block
+                const auto model_hash =
+                    hash_provider_->toModelHash(hash.value());
+                // iterate over peers who voted for the committed block
+                rxcpp::observable<>::iterate(commit_message.votes)
+                    // allow other peers to apply commit
+                    .delay(std::chrono::milliseconds(delay_))
+                    .flat_map([this, model_hash](auto vote) {
+                      // map vote to block if it can be loaded
+                      return rxcpp::observable<>::create<
+                          std::shared_ptr<shared_model::interface::Block>>(
+                          [this, model_hash, vote](auto subscriber) {
+                            auto block = block_loader_->retrieveBlock(
+                                shared_model::crypto::PublicKey(
+                                    {vote.signature.pubkey.begin(),
+                                     vote.signature.pubkey.end()}),
+                                shared_model::crypto::Hash(
+                                    {model_hash.begin(), model_hash.end()}));
+                            // if load is successful
+                            if (block.has_value()) {
+                              subscriber.on_next(block.value());
+                            }
+                            subscriber.on_completed();
+                          });
+                    })
+                    // need only the first
+                    .first()
+                    .subscribe(
+                        // if load is successful from at least one node
+                        [subscriber](auto block) {
+                          subscriber.on_next(block);
+                          subscriber.on_completed();
+                        },
+                        // if load has failed, no peers provided the block
+                        [this, subscriber](std::exception_ptr) {
+                          log_->error("Cannot load committed block");
+                          subscriber.on_completed();
+                        });
+              });
         });
       }
 

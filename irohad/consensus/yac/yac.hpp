@@ -31,11 +31,6 @@
 #include "logger/logger.hpp"
 
 namespace iroha {
-
-  namespace model {
-    struct Peer;
-  }
-
   namespace consensus {
     namespace yac {
 
@@ -107,10 +102,14 @@ namespace iroha {
          * top block in ledger does not correspond to consensus round number
          */
 
-        void applyCommit(nonstd::optional<std::shared_ptr<shared_model::interface::Peer>> from,
-                         CommitMessage commit);
-        void applyReject(nonstd::optional<std::shared_ptr<shared_model::interface::Peer>> from,
-                         RejectMessage reject);
+        void applyCommit(
+            nonstd::optional<std::shared_ptr<shared_model::interface::Peer>>
+                from,
+            CommitMessage commit);
+        void applyReject(
+            nonstd::optional<std::shared_ptr<shared_model::interface::Peer>>
+                from,
+            RejectMessage reject);
         void applyVote(nonstd::optional<
                            std::shared_ptr<shared_model::interface::Peer>> from,
                        VoteMessage vote);

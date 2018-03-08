@@ -72,7 +72,8 @@ MATCHER_P(NewBlockMatcher,
 TEST_F(SynchronizerTest, ValidWhenInitialized) {
   // synchronizer constructor => on_commit subscription called
   EXPECT_CALL(*consensus_gate, on_commit())
-      .WillOnce(Return(rxcpp::observable<>::empty<std::shared_ptr<shared_model::interface::Block>>()));
+      .WillOnce(Return(rxcpp::observable<>::empty<
+                       std::shared_ptr<shared_model::interface::Block>>()));
 
   init();
 }
@@ -91,14 +92,16 @@ TEST_F(SynchronizerTest, ValidWhenSingleCommitSynchronized) {
 
   // TODO: 14-02-2018 Alexey Chernyshov uncomment expected argument after
   // relocation to shared_model https://soramitsu.atlassian.net/browse/IR-903
-  //  EXPECT_CALL(*chain_validator, validateBlock(testing::Ref(new_test_block), _))
+  //  EXPECT_CALL(*chain_validator, validateBlock(testing::Ref(new_test_block),
+  //  _))
   EXPECT_CALL(*chain_validator, validateBlock(NewBlockMatcher(test_block), _))
       .WillOnce(Return(true));
 
   EXPECT_CALL(*block_loader, retrieveBlocks(_)).Times(0);
 
   EXPECT_CALL(*consensus_gate, on_commit())
-      .WillOnce(Return(rxcpp::observable<>::empty<std::shared_ptr<shared_model::interface::Block>>()));
+      .WillOnce(Return(rxcpp::observable<>::empty<
+                       std::shared_ptr<shared_model::interface::Block>>()));
 
   init();
 
@@ -133,7 +136,8 @@ TEST_F(SynchronizerTest, ValidWhenBadStorage) {
   EXPECT_CALL(*block_loader, retrieveBlocks(_)).Times(0);
 
   EXPECT_CALL(*consensus_gate, on_commit())
-      .WillOnce(Return(rxcpp::observable<>::empty<std::shared_ptr<shared_model::interface::Block>>()));
+      .WillOnce(Return(rxcpp::observable<>::empty<
+                       std::shared_ptr<shared_model::interface::Block>>()));
 
   init();
 
@@ -161,7 +165,8 @@ TEST_F(SynchronizerTest, ValidWhenBlockValidationFailure) {
 
   // TODO: 14-02-2018 Alexey Chernyshov replace with expected argument after
   // relocation to shared_model https://soramitsu.atlassian.net/browse/IR-903
-//  EXPECT_CALL(*chain_validator, validateBlock(testing::Ref(new_test_block), _))
+  //  EXPECT_CALL(*chain_validator, validateBlock(testing::Ref(new_test_block),
+  //  _))
   EXPECT_CALL(*chain_validator, validateBlock(NewBlockMatcher(test_block), _))
       .WillOnce(Return(false));
 
@@ -174,7 +179,8 @@ TEST_F(SynchronizerTest, ValidWhenBlockValidationFailure) {
                   shared_model::proto::from_old(test_block))))));
 
   EXPECT_CALL(*consensus_gate, on_commit())
-      .WillOnce(Return(rxcpp::observable<>::empty<std::shared_ptr<shared_model::interface::Block>>()));
+      .WillOnce(Return(rxcpp::observable<>::empty<
+                       std::shared_ptr<shared_model::interface::Block>>()));
 
   init();
 
