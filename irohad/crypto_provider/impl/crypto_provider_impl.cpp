@@ -30,12 +30,15 @@
 #include "model/query.hpp"
 #include "model/sha3_hash.hpp"
 #include "model/transaction.hpp"
+#include "cryptography/crypto_provider/crypto_verifier.hpp"
 
 namespace iroha {
 
   CryptoProviderImpl::CryptoProviderImpl(
       const shared_model::crypto::Keypair &keypair)
+//      std::shared_ptr<shared_model::crypto::CryptoVerifier<>> crypto_verifier)
       : keypair_(keypair) {
+//      , crypto_verifier_(crypto_verifier) {
     // TODO Alexey Chernyshov 2018-03-08 IR-968 - old model should be removed
     // after relocation to shared_model
     std::unique_ptr<iroha::keypair_t> old_key(keypair.makeOldModel());
@@ -44,7 +47,14 @@ namespace iroha {
 
   bool CryptoProviderImpl::verify(
       const shared_model::interface::Block &block) const {
-    return true;
+    return std::all_of(
+        block.signatures().begin(),
+        block.signatures().end(),
+        [this, &block](const shared_model::detail::PolymorphicWrapper<
+                       shared_model::interface::Signature> &signature) {
+          return shared_model::crypto::CryptoVerifier<>::verify(
+              signature->signedData(), block.payload(), signature->publicKey());
+        });
   }
 
   bool CryptoProviderImpl::verify(

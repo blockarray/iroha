@@ -18,6 +18,8 @@
 #ifndef IROHA_CRYPTO_PROVIDER_IMPL_HPP
 #define IROHA_CRYPTO_PROVIDER_IMPL_HPP
 
+#include <memory>
+
 #include "crypto_provider/crypto_provider.hpp"
 #include "cryptography/keypair.hpp"
 
@@ -25,7 +27,11 @@ namespace iroha {
 
   class CryptoProviderImpl : public CryptoProvider {
    public:
-    explicit CryptoProviderImpl(const shared_model::crypto::Keypair &keypair);
+    explicit CryptoProviderImpl(
+        const shared_model::crypto::Keypair &keypair);
+//        std::shared_ptr<shared_model::crypto::CryptoVerifier<>>
+//            crypto_verifier =
+//                std::make_shared<shared_model::crypto::CryptoVerifier<>>());
 
     bool verify(const shared_model::interface::Block &block) const override;
 
@@ -57,8 +63,9 @@ namespace iroha {
 
    private:
     keypair_t old_keypair_;
+//    std::shared_ptr<shared_model::crypto::CryptoVerifier<>> crypto_verifier_;
   };
 
-}
+}  // namespace iroha
 
-#endif //IROHA_CRYPTO_PROVIDER_IMPL_HPP
+#endif  // IROHA_CRYPTO_PROVIDER_IMPL_HPP
