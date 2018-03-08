@@ -11,4 +11,4 @@ set(CMAKE_COLOR_MAKEFILE               "ON")  # enables color output in Make
 add_compile_options("-Wall")
 add_compile_options("-Wno-deprecated-declarations")
 add_compile_options("-Werror=return-type") # when function which returns object has no return statement
-add_compile_options("-Wno-error=unused-parameter)
+add_compile_options("-Wno-error=unused-parameter")
