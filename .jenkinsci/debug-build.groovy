@@ -66,7 +66,7 @@ def doDebugBuild() {
         if ( env.COVERAGE_ALREADY_BUILT == 0 ) {
         	env.COVERAGE_ALREADY_BUILT = 1
 		    // Sonar
-		    if (env.CHANGE_ID != null) {
+		    //if (env.CHANGE_ID != null) {
 		        sh """
 		            sonar-scanner \
 		                -Dsonar.github.disableInlineComments \
@@ -77,7 +77,7 @@ def doDebugBuild() {
 		                -Dsonar.github.oauth=${SORABOT_TOKEN} \
 		                -Dsonar.github.pullRequest=${CHANGE_ID}
 		        """
-		    }
+		    //}
 
         	sh "lcov --capture --directory build --config-file .lcovrc --output-file build/reports/coverage_full.info"
 		    sh "lcov --remove build/reports/coverage_full.info '/usr/*' 'schema/*' --config-file .lcovrc -o build/reports/coverage_full_filtered.info"

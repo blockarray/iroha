@@ -1,6 +1,6 @@
 FROM ubuntu:16.04
 
-ARG node
+ARG iroha-deb-path=iroha.deb
 
 RUN apt-get update;\
     apt-get upgrade; \
@@ -8,7 +8,7 @@ RUN apt-get update;\
     libc-ares-dev
 
 #Install iroha
-COPY iroha.deb /tmp/iroha.deb
+COPY ${iroha-deb-path} /tmp/iroha.deb
 RUN dpkg -i /tmp/iroha.deb; rm -f /tmp/iroha.deb
 
 WORKDIR /opt/iroha_data

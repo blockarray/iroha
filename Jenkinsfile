@@ -150,13 +150,13 @@ pipeline {
                             """
                             sh "/usr/local/bin/cmake --build build -- -j${params.PARALLELISM}"
                             sh "/usr/local/bin/ccache --show-stats"
-                            sh "cmake --build build --target test"
-                            sh "cmake --build build --target cppcheck"
+                            sh "/usr/local/bin/cmake --build build --target test"
+                            sh "/usr/local/bin/cmake --build build --target cppcheck"
 
                             if ( env.COVERAGE_ALREADY_BUILT == 0 ) {
                                 env.COVERAGE_ALREADY_BUILT = 1
                                 // Sonar
-                                if (env.CHANGE_ID != null) {
+                                //if (env.CHANGE_ID != null) {
                                     sh """
                                         sonar-scanner \
                                             -Dsonar.github.disableInlineComments \
@@ -167,7 +167,7 @@ pipeline {
                                             -Dsonar.github.oauth=${SORABOT_TOKEN} \
                                             -Dsonar.github.pullRequest=${CHANGE_ID}
                                     """
-                                }
+                                //}
                             }
                             
                             // TODO: replace with upload to artifactory server
@@ -289,15 +289,15 @@ pipeline {
             }
         }
         stage('Build docs') {
-            // build docs on any vacant node. Prefer `x86_64` over
-            // others as nodes are more powerful
-            agent { label 'x86_64 || arm' }
             when {
                 allOf {
                     expression { return params.Doxygen }
                     expression { BRANCH_NAME ==~ /(master|develop)/ }
                 }
             }
+            // build docs on any vacant node. Prefer `x86_64` over
+            // others as nodes are more powerful
+            agent { label 'x86_64 || arm' }
             steps {
                 script {
                     def doxygen = load ".jenkinsci/doxygen.groovy"
@@ -309,7 +309,6 @@ pipeline {
             }
         }
         stage('Build bindings') {
-            agent { label 'x86_64' }
             when {
                 anyOf {
                     expression { return params.BindingsOnly }
@@ -317,6 +316,7 @@ pipeline {
                     expression { return params.JavaBindings }
                 }
             }
+            agent { label 'x86_64' }
             steps {
                 script {
                     def bindings = load ".jenkinsci/bindings.groovy"
