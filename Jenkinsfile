@@ -22,6 +22,7 @@ properties([parameters([
     booleanParam(defaultValue: false, description: 'Whether build bindings only w/o Iroha itself', name: 'BindingsOnly'),
     string(defaultValue: '4', description: 'How much parallelism should we exploit. "4" is optimal for machines with modest amount of memory and at least 4 cores', name: 'PARALLELISM')])])
 
+
 pipeline {
     environment {
         CCACHE_DIR = '/opt/.ccache'
@@ -37,8 +38,6 @@ pipeline {
         IROHA_POSTGRES_USER = "pg-user-${GIT_COMMIT}"
         IROHA_POSTGRES_PASSWORD = "${GIT_COMMIT}"
         IROHA_POSTGRES_PORT = 5432
-
-        COVERAGE_ALREADY_BUILT = "0"
     }
 
     options {
@@ -70,6 +69,7 @@ pipeline {
                     agent { label 'x86_64' }
                     steps {
                         script {
+                            def coverageEnabled = true
                             debugBuild = load ".jenkinsci/debug-build.groovy"
                             debugBuild.doDebugBuild()
                         }
@@ -89,6 +89,10 @@ pipeline {
                     agent { label 'armv7' }
                     steps {
                         script {
+                            def coverageEnabled = false
+                            if (!params.Linux && !params.ARMv8 && !params.MacOS) {
+                                coverageEnabled = true
+                            }
                             def debugBuild = load ".jenkinsci/debug-build.groovy"
                             debugBuild.doDebugBuild()
                         }
@@ -108,6 +112,10 @@ pipeline {
                     agent { label 'armv8' }
                     steps {
                         script {
+                            def coverageEnabled = false
+                            if (!params.Linux && !params.MacOS) {
+                                coverageEnabled = true
+                            }
                             def debugBuild = load ".jenkinsci/debug-build.groovy"
                             debugBuild.doDebugBuild()
                         }
@@ -127,6 +135,10 @@ pipeline {
                     agent { label 'mac' }
                     steps {
                         script {
+                            def coverageEnabled = false
+                            if (!params.Linux) {
+                                coverageEnabled = true
+                            }
                             def scmVars = checkout scm
                             env.IROHA_VERSION = "0x${scmVars.GIT_COMMIT}"
                             env.IROHA_HOME = "/opt/iroha"
@@ -156,8 +168,7 @@ pipeline {
                             // sh "/usr/local/bin/cmake --build build --target test"
                             // sh "/usr/local/bin/cmake --build build --target cppcheck"
 
-                            // if ( env.COVERAGE_ALREADY_BUILT == "0" ) {
-                            //     env.COVERAGE_ALREADY_BUILT = "1"
+                            // if ( coverageEnabled ) {
                             //     // Sonar
                             //     if (env.CHANGE_ID != null) {
                             //         sh """

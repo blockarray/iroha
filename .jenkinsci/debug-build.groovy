@@ -63,21 +63,31 @@ def doDebugBuild() {
 	    sh "cmake --build build --target test"
 	    sh "cmake --build build --target cppcheck"
         
-        if ( env.COVERAGE_ALREADY_BUILT == "0" ) {
-        	env.COVERAGE_ALREADY_BUILT = "1"
+        if ( coverageEnabled ) {
 		    // Sonar
-		    //if (env.CHANGE_ID != null) {
-		        sh """
-		            sonar-scanner \
-		                -Dsonar.github.disableInlineComments \
-		                -Dsonar.github.repository='hyperledger/iroha' \
-		                -Dsonar.analysis.mode=preview \
-		                -Dsonar.login=${SONAR_TOKEN} \
-		                -Dsonar.projectVersion=${BUILD_TAG} \
-		                -Dsonar.github.oauth=${SORABOT_TOKEN} \
-		                -Dsonar.github.pullRequest=${CHANGE_ID}
-		        """
-		    //}
+		    // if (env.CHANGE_ID != null) {
+		    //     sh """
+		    //         sonar-scanner \
+		    //             -Dsonar.github.disableInlineComments \
+		    //             -Dsonar.github.repository='hyperledger/iroha' \
+		    //             -Dsonar.analysis.mode=preview \
+		    //             -Dsonar.login=${SONAR_TOKEN} \
+		    //             -Dsonar.projectVersion=${BUILD_TAG} \
+		    //             -Dsonar.github.oauth=${SORABOT_TOKEN} \
+		    //             -Dsonar.github.pullRequest=${CHANGE_ID}
+		    //     """
+		    // }
+
+		    // sonar test
+		   	sh """
+	            sonar-scanner \
+	                -Dsonar.github.disableInlineComments \
+	                -Dsonar.github.repository='hyperledger/iroha' \
+	                -Dsonar.analysis.mode=preview \
+	                -Dsonar.login=${SONAR_TOKEN} \
+	                -Dsonar.projectVersion=${BUILD_TAG} \
+	                -Dsonar.github.oauth=${SORABOT_TOKEN}
+	        """
 
         	sh "lcov --capture --directory build --config-file .lcovrc --output-file build/reports/coverage_full.info"
 		    sh "lcov --remove build/reports/coverage_full.info '/usr/*' 'schema/*' --config-file .lcovrc -o build/reports/coverage_full_filtered.info"
