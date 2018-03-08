@@ -107,9 +107,9 @@ namespace iroha {
          * top block in ledger does not correspond to consensus round number
          */
 
-        void applyCommit(nonstd::optional<model::Peer> from,
+        void applyCommit(nonstd::optional<std::shared_ptr<shared_model::interface::Peer>> from,
                          CommitMessage commit);
-        void applyReject(nonstd::optional<model::Peer> from,
+        void applyReject(nonstd::optional<std::shared_ptr<shared_model::interface::Peer>> from,
                          RejectMessage reject);
         void applyVote(nonstd::optional<
                            std::shared_ptr<shared_model::interface::Peer>> from,
