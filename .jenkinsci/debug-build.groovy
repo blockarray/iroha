@@ -63,8 +63,8 @@ def doDebugBuild() {
 	    sh "cmake --build build --target test"
 	    sh "cmake --build build --target cppcheck"
         
-        if ( env.COVERAGE_ALREADY_BUILT == 0 ) {
-        	env.COVERAGE_ALREADY_BUILT = 1
+        if ( env.COVERAGE_ALREADY_BUILT == "0" ) {
+        	env.COVERAGE_ALREADY_BUILT = "1"
 		    // Sonar
 		    //if (env.CHANGE_ID != null) {
 		        sh """
