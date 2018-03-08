@@ -1,6 +1,6 @@
 #!/usr/bin/env groovy
 
-def doDebugBuild() {
+def doDebugBuild(coverageEnabled=false) {
 	def parallelism = env.PARALLELISM
 	if ("arm7" in env.NODE_NAME) {
 		parallelism = 1

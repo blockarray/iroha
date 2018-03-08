@@ -70,7 +70,7 @@ pipeline {
                     steps {
                         script {
                             debugBuild = load ".jenkinsci/debug-build.groovy"
-                            debugBuild.doDebugBuild(coverageEnabled=true)
+                            debugBuild.doDebugBuild(true)
                         }
                     }
                     post {
@@ -90,7 +90,7 @@ pipeline {
                         script {
                             def debugBuild = load ".jenkinsci/debug-build.groovy"
                             if (!params.Linux && !params.ARMv8 && !params.MacOS) {
-                                debugBuild.doDebugBuild(coverageEnabled=true)
+                                debugBuild.doDebugBuild(true)
                             }                            
                             else {
                                 debugBuild.doDebugBuild()
@@ -114,7 +114,7 @@ pipeline {
                         script {
                             def debugBuild = load ".jenkinsci/debug-build.groovy"
                             if (!params.Linux && !params.MacOS) {
-                                debugBuild.doDebugBuild(coverageEnabled = true)
+                                debugBuild.doDebugBuild(true)
                             }
                             else {
                                 debugBuild.doDebugBuild()
