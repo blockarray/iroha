@@ -38,7 +38,7 @@ pipeline {
         IROHA_POSTGRES_PASSWORD = "${GIT_COMMIT}"
         IROHA_POSTGRES_PORT = 5432
 
-        LCOV_ALREADY_BUILT = 0
+        COVERAGE_ALREADY_BUILT = 0
     }
 
     options {
@@ -150,6 +150,25 @@ pipeline {
                             """
                             sh "/usr/local/bin/cmake --build build -- -j${params.PARALLELISM}"
                             sh "/usr/local/bin/ccache --show-stats"
+                            sh "cmake --build build --target test"
+                            sh "cmake --build build --target cppcheck"
+
+                            if ( env.COVERAGE_ALREADY_BUILT == 0 ) {
+                                env.COVERAGE_ALREADY_BUILT = 1
+                                // Sonar
+                                if (env.CHANGE_ID != null) {
+                                    sh """
+                                        sonar-scanner \
+                                            -Dsonar.github.disableInlineComments \
+                                            -Dsonar.github.repository='hyperledger/iroha' \
+                                            -Dsonar.analysis.mode=preview \
+                                            -Dsonar.login=${SONAR_TOKEN} \
+                                            -Dsonar.projectVersion=${BUILD_TAG} \
+                                            -Dsonar.github.oauth=${SORABOT_TOKEN} \
+                                            -Dsonar.github.pullRequest=${CHANGE_ID}
+                                    """
+                                }
+                            }
                             
                             // TODO: replace with upload to artifactory server
                             // only develop branch
@@ -269,23 +288,6 @@ pipeline {
                 }
             }
         }
-        // stage('SonarQube') {
-        //     when { expression { params.BUILD_TYPE == 'Release' } }
-        //     steps {
-        //         sh """
-        //             if [ -n ${SONAR_TOKEN} ] && \
-        //               [ -n ${BUILD_TAG} ] && \
-        //               [ -n ${BRANCH_NAME} ]; then
-        //               sonar-scanner \
-        //                 -Dsonar.login=${SONAR_TOKEN} \
-        //                 -Dsonar.projectVersion=${BUILD_TAG} \
-        //                 -Dsonar.branch=${BRANCH_NAME}
-        //             else
-        //               echo 'required env vars not found'
-        //             fi
-        //         """
-        //     }
-        // }
         stage('Build docs') {
             // build docs on any vacant node. Prefer `x86_64` over
             // others as nodes are more powerful

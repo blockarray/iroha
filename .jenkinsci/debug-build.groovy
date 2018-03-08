@@ -62,33 +62,34 @@ def doDebugBuild() {
 	    sh "ccache --show-stats"
 	    sh "cmake --build build --target test"
 	    sh "cmake --build build --target cppcheck"
-	    
-	    // Sonar
-	    if (env.CHANGE_ID != null) {
-	        sh """
-	            sonar-scanner \
-	                -Dsonar.github.disableInlineComments \
-	                -Dsonar.github.repository='hyperledger/iroha' \
-	                -Dsonar.analysis.mode=preview \
-	                -Dsonar.login=${SONAR_TOKEN} \
-	                -Dsonar.projectVersion=${BUILD_TAG} \
-	                -Dsonar.github.oauth=${SORABOT_TOKEN} \
-	                -Dsonar.github.pullRequest=${CHANGE_ID}
-	        """
-	    }
+        
+        if ( env.COVERAGE_ALREADY_BUILT == 0 ) {
+        	env.COVERAGE_ALREADY_BUILT = 1
+		    // Sonar
+		    if (env.CHANGE_ID != null) {
+		        sh """
+		            sonar-scanner \
+		                -Dsonar.github.disableInlineComments \
+		                -Dsonar.github.repository='hyperledger/iroha' \
+		                -Dsonar.analysis.mode=preview \
+		                -Dsonar.login=${SONAR_TOKEN} \
+		                -Dsonar.projectVersion=${BUILD_TAG} \
+		                -Dsonar.github.oauth=${SORABOT_TOKEN} \
+		                -Dsonar.github.pullRequest=${CHANGE_ID}
+		        """
+		    }
+
+        	sh "lcov --capture --directory build --config-file .lcovrc --output-file build/reports/coverage_full.info"
+		    sh "lcov --remove build/reports/coverage_full.info '/usr/*' 'schema/*' --config-file .lcovrc -o build/reports/coverage_full_filtered.info"
+		    sh "python /tmp/lcov_cobertura.py build/reports/coverage_full_filtered.info -o build/reports/coverage.xml"                                
+		    cobertura autoUpdateHealth: false, autoUpdateStability: false, coberturaReportFile: '**/build/reports/coverage.xml', conditionalCoverageTargets: '75, 50, 0', failUnhealthy: false, failUnstable: false, lineCoverageTargets: '75, 50, 0', maxNumberOfBuilds: 50, methodCoverageTargets: '75, 50, 0', onlyStable: false, zoomCoverageChart: false
+        }
 
 	    // TODO: replace with upload to artifactory server
         // develop branch only
         if ( env.BRANCH_NAME == "develop" ) {
             //archive(includes: 'build/bin/,compile_commands.json')
         }
-        if ( env.LCOV_ALREADY_BUILT == 0 || ! params.MacOS ) {
-        	env.LCOV_ALREADY_BUILT = 1
-        	sh "lcov --capture --directory build --config-file .lcovrc --output-file build/reports/coverage_full.info"
-		    sh "lcov --remove build/reports/coverage_full.info '/usr/*' 'schema/*' --config-file .lcovrc -o build/reports/coverage_full_filtered.info"
-		    sh "python /tmp/lcov_cobertura.py build/reports/coverage_full_filtered.info -o build/reports/coverage.xml"                                
-		    cobertura autoUpdateHealth: false, autoUpdateStability: false, coberturaReportFile: '**/build/reports/coverage.xml', conditionalCoverageTargets: '75, 50, 0', failUnhealthy: false, failUnstable: false, lineCoverageTargets: '75, 50, 0', maxNumberOfBuilds: 50, methodCoverageTargets: '75, 50, 0', onlyStable: false, zoomCoverageChart: false
-        }	    
 	}
 }
 return this
