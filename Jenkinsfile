@@ -69,9 +69,8 @@ pipeline {
                     agent { label 'x86_64' }
                     steps {
                         script {
-                            def coverageEnabled = true
                             debugBuild = load ".jenkinsci/debug-build.groovy"
-                            debugBuild.doDebugBuild()
+                            debugBuild.doDebugBuild(coverageEnabled=true)
                         }
                     }
                     post {
@@ -89,12 +88,13 @@ pipeline {
                     agent { label 'armv7' }
                     steps {
                         script {
-                            def coverageEnabled = false
-                            if (!params.Linux && !params.ARMv8 && !params.MacOS) {
-                                coverageEnabled = true
-                            }
                             def debugBuild = load ".jenkinsci/debug-build.groovy"
-                            debugBuild.doDebugBuild()
+                            if (!params.Linux && !params.ARMv8 && !params.MacOS) {
+                                debugBuild.doDebugBuild(coverageEnabled=true)
+                            }                            
+                            else {
+                                debugBuild.doDebugBuild()
+                            }
                         }
                     }
                     post {
@@ -112,12 +112,13 @@ pipeline {
                     agent { label 'armv8' }
                     steps {
                         script {
-                            def coverageEnabled = false
-                            if (!params.Linux && !params.MacOS) {
-                                coverageEnabled = true
-                            }
                             def debugBuild = load ".jenkinsci/debug-build.groovy"
-                            debugBuild.doDebugBuild()
+                            if (!params.Linux && !params.MacOS) {
+                                debugBuild.doDebugBuild(coverageEnabled = true)
+                            }
+                            else {
+                                debugBuild.doDebugBuild()
+                            }                            
                         }
                     }
                     post {
