@@ -144,7 +144,6 @@ pipeline {
                             env.IROHA_VERSION = "0x${scmVars.GIT_COMMIT}"
                             env.IROHA_HOME = "/opt/iroha"
                             env.IROHA_BUILD = "${env.IROHA_HOME}/build"
-                            env.CCACHE_DIR = "${env.IROHA_HOME}/.ccache"
 
                             sh """
                                 /usr/local/bin/ccache --version
