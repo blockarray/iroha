@@ -165,8 +165,8 @@ pipeline {
                             sh "/usr/local/bin/ccache --show-stats"
                             sh """
                                 mkdir -p /var/jenkins/${GIT_COMMIT}-${BUILD_NUMBER}; \
-                                initdb -D /var/jenkins/${GIT_COMMIT}-${BUILD_NUMBER}/ -U ${env.IROHA_POSTGRES_USER} --pwfile=<(echo ${env.IROHA_POSTGRES_PASSWORD}); \
-                                pg_ctl -D /var/jenkins/${GIT_COMMIT}-${BUILD_NUMBER}/ -o '-p 5433' -l /var/jenkins/${GIT_COMMIT}-${BUILD_NUMBER}/events.log start;
+                                /usr/local/bin/initdb -D /var/jenkins/${GIT_COMMIT}-${BUILD_NUMBER}/ -U ${env.IROHA_POSTGRES_USER} --pwfile=<(echo ${env.IROHA_POSTGRES_PASSWORD}); \
+                                /usr/local/bin/pg_ctl -D /var/jenkins/${GIT_COMMIT}-${BUILD_NUMBER}/ -o '-p 5433' -l /var/jenkins/${GIT_COMMIT}-${BUILD_NUMBER}/events.log start;
                             """
                             sh "(export IROHA_POSTGRES_HOST=localhost; export IROHA_POSTGRES_PORT=5433; /usr/local/bin/cmake --build build --target test)"
                             sh "/usr/local/bin/cmake --build build --target cppcheck"
@@ -175,7 +175,7 @@ pipeline {
                                 // Sonar
                                 //if (env.CHANGE_ID != null) {
                                     sh """
-                                        sonar-scanner \
+                                        /usr/local/bin/sonar-scanner \
                                             -Dsonar.github.disableInlineComments \
                                             -Dsonar.github.repository='hyperledger/iroha' \
                                             -Dsonar.analysis.mode=preview \
