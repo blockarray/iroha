@@ -180,7 +180,6 @@ pipeline {
                                         /usr/local/bin/sonar-scanner \
                                             -Dsonar.github.disableInlineComments \
                                             -Dsonar.github.repository='hyperledger/iroha' \
-                                            -Dsonar.analysis.mode=preview \
                                             -Dsonar.login=${SONAR_TOKEN} \
                                             -Dsonar.projectVersion=${BUILD_TAG} \
                                             -Dsonar.github.oauth=${SORABOT_TOKEN}
