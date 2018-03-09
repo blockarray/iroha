@@ -163,27 +163,28 @@ pipeline {
                             """
                             sh "/usr/local/bin/cmake --build build -- -j${params.PARALLELISM}"
                             sh "/usr/local/bin/ccache --show-stats"
-                            // TODO: IR-1083 disable tests for now
-                            // we cannot pass PSQL DB name as env var. Which implies that tests
-                            // running in parallel will interfere w/ each other (as they use e.g., `DROP DATABASE`)
-                            // sh "/usr/local/bin/cmake --build build --target test"
-                            // sh "/usr/local/bin/cmake --build build --target cppcheck"
+                            sh """
+                                mkdir -p /var/jenkins/${GIT_COMMIT}-${BUILD_NUMBER}; \
+                                initdb -D /var/jenkins/${GIT_COMMIT}-${BUILD_NUMBER}/ -U ${env.IROHA_POSTGRES_USER} --pwfile=<(echo ${env.IROHA_POSTGRES_PASSWORD}); \
+                                pg_ctl -D /var/jenkins/${GIT_COMMIT}-${BUILD_NUMBER}/ -o '-p 5433' -l /var/jenkins/${GIT_COMMIT}-${BUILD_NUMBER}/events.log start;
+                            """
+                            sh "(export IROHA_POSTGRES_HOST=localhost; export IROHA_POSTGRES_PORT=5433; /usr/local/bin/cmake --build build --target test)"
+                            sh "/usr/local/bin/cmake --build build --target cppcheck"
 
-                            // if ( coverageEnabled ) {
-                            //     // Sonar
-                            //     if (env.CHANGE_ID != null) {
-                            //         sh """
-                            //             sonar-scanner \
-                            //                 -Dsonar.github.disableInlineComments \
-                            //                 -Dsonar.github.repository='hyperledger/iroha' \
-                            //                 -Dsonar.analysis.mode=preview \
-                            //                 -Dsonar.login=${SONAR_TOKEN} \
-                            //                 -Dsonar.projectVersion=${BUILD_TAG} \
-                            //                 -Dsonar.github.oauth=${SORABOT_TOKEN} \
-                            //                 -Dsonar.github.pullRequest=${CHANGE_ID}
-                            //         """
-                            //     }
-                            // }
+                            if ( coverageEnabled ) {
+                                // Sonar
+                                //if (env.CHANGE_ID != null) {
+                                    sh """
+                                        sonar-scanner \
+                                            -Dsonar.github.disableInlineComments \
+                                            -Dsonar.github.repository='hyperledger/iroha' \
+                                            -Dsonar.analysis.mode=preview \
+                                            -Dsonar.login=${SONAR_TOKEN} \
+                                            -Dsonar.projectVersion=${BUILD_TAG} \
+                                            -Dsonar.github.oauth=${SORABOT_TOKEN}
+                                    """
+                                //}
+                            }
                             
                             // TODO: replace with upload to artifactory server
                             // only develop branch
@@ -196,6 +197,10 @@ pipeline {
                         always {
                             script {
                                 cleanWs()
+                                sh """
+                                    pg_ctl -D /var/jenkins/${GIT_COMMIT}-${BUILD_NUMBER}/ stop && \
+                                    rm -rf /var/jenkins/${GIT_COMMIT}-${BUILD_NUMBER}/
+                                """
                             }
                         }
                     }
