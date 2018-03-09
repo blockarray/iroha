@@ -35,7 +35,7 @@ pipeline {
 
         IROHA_NETWORK = "iroha-${GIT_COMMIT}-${BUILD_NUMBER}"
         IROHA_POSTGRES_HOST = "pg-${GIT_COMMIT}-${BUILD_NUMBER}"
-        IROHA_POSTGRES_USER = "pg-user-${GIT_COMMIT}"
+        IROHA_POSTGRES_USER = "pguser${GIT_COMMIT}"
         IROHA_POSTGRES_PASSWORD = "${GIT_COMMIT}"
         IROHA_POSTGRES_PORT = 5432
     }
@@ -164,11 +164,14 @@ pipeline {
                             sh "/usr/local/bin/cmake --build build -- -j${params.PARALLELISM}"
                             sh "/usr/local/bin/ccache --show-stats"
                             sh """
+                                export IROHA_POSTGRES_PASSWORD=${IROHA_POSTGRES_PORT}; \
+                                export IROHA_POSTGRES_USER=${IROHA_POSTGRES_USER}; \
                                 mkdir -p /var/jenkins/${GIT_COMMIT}-${BUILD_NUMBER}; \
-                                /usr/local/bin/initdb -D /var/jenkins/${GIT_COMMIT}-${BUILD_NUMBER}/ -U ${env.IROHA_POSTGRES_USER} --pwfile=<(echo ${env.IROHA_POSTGRES_PASSWORD}); \
-                                /usr/local/bin/pg_ctl -D /var/jenkins/${GIT_COMMIT}-${BUILD_NUMBER}/ -o '-p 5433' -l /var/jenkins/${GIT_COMMIT}-${BUILD_NUMBER}/events.log start;
+                                /usr/local/bin/initdb -D /var/jenkins/${GIT_COMMIT}-${BUILD_NUMBER}/ -U ${IROHA_POSTGRES_USER} --pwfile=<(echo ${IROHA_POSTGRES_PASSWORD}); \
+                                /usr/local/bin/pg_ctl -D /var/jenkins/${GIT_COMMIT}-${BUILD_NUMBER}/ -o '-p 5433' -l /var/jenkins/${GIT_COMMIT}-${BUILD_NUMBER}/events.log start; \
+                                /usr/local/bin/psql -h localhost -d postgres -p 5433 -U ${IROHA_POSTGRES_USER} --file=<(echo create database ${IROHA_POSTGRES_USER};)
                             """
-                            sh "(export IROHA_POSTGRES_HOST=localhost; export IROHA_POSTGRES_PORT=5433; /usr/local/bin/cmake --build build --target test)"
+                            sh "IROHA_POSTGRES_HOST=localhost IROHA_POSTGRES_PORT=5433 /usr/local/bin/cmake --build build --target test"
                             sh "/usr/local/bin/cmake --build build --target cppcheck"
 
                             if ( coverageEnabled ) {
@@ -198,7 +201,7 @@ pipeline {
                             script {
                                 cleanWs()
                                 sh """
-                                    pg_ctl -D /var/jenkins/${GIT_COMMIT}-${BUILD_NUMBER}/ stop && \
+                                    /usr/local/bin/pg_ctl -D /var/jenkins/${GIT_COMMIT}-${BUILD_NUMBER}/ stop && \
                                     rm -rf /var/jenkins/${GIT_COMMIT}-${BUILD_NUMBER}/
                                 """
                             }
