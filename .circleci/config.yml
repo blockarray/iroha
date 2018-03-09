@@ -358,14 +358,15 @@ workflows:
       - sonar-release:
           requires:
             - build
-          filters:
-            branches:
-              only:
-                - develop
-                - master
-                - /trunk\/.*/
-            tags:
-              only: /v[\.0-9]+.*/
+#          filters:
+## for test purposes
+#            branches:
+#              only:
+#                - develop
+#                - master
+#                - /trunk\/.*/
+#            tags:
+#              only: /v[\.0-9]+.*/
 
       # build-linux-release -> dockerize
       - build-linux-release:
